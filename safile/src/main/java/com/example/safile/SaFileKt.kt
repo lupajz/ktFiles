@@ -22,16 +22,7 @@ import android.os.Build
 import android.provider.DocumentsContract
 import android.util.Log
 
-class SaFile private constructor(private val context: Context, private val uri: Uri) {
-
-    val documentId:String
-    val mimeType:String
-    val name:String
-    val summary:String
-    val lastModified:Long
-    val length:Long
-
-    private val flags:Long
+class SaFileKt private constructor(private val context: Context, private val uri: Uri) {
 
     init {
         context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -40,8 +31,6 @@ class SaFile private constructor(private val context: Context, private val uri: 
                     Log.d("nicole", "file: ${cursor.columnNames[col]}=${cursor.getString(col)}")
                 }
             }
-
-            documentId = cursor.getString(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID))
         }
     }
 
@@ -53,7 +42,7 @@ class SaFile private constructor(private val context: Context, private val uri: 
                     treeUri,
                     documentId
                 )
-                val file = SaFile(context, uri)
+                val file = SaFileKt(context, uri)
             }
         }
 

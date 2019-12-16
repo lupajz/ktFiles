@@ -23,11 +23,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.transaction
+import androidx.fragment.app.commit
 import com.example.safile.SaFile
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.toolbar
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -72,12 +71,13 @@ class MainActivity : AppCompatActivity() {
             )
             showDirectoryContents(directoryUri)
 
-            SaFile.fromUri(this, directoryUri)
+            val doc = SaFile.fromUri(this, directoryUri);
+            Log.d("nicole", "name: ${doc.name}, type: ${doc.type}")
         }
     }
 
     fun showDirectoryContents(directoryUri: Uri) {
-        supportFragmentManager.transaction {
+        supportFragmentManager.commit {
             val directoryTag = directoryUri.toString()
             val directoryFragment = DirectoryFragment.newInstance(directoryUri)
             replace(R.id.fragment_container, directoryFragment, directoryTag)
