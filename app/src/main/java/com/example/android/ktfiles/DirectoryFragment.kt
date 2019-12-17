@@ -34,6 +34,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.safile.DocumentFile
 
 /**
  * Fragment that shows a list of documents in a directory.
@@ -62,11 +63,11 @@ class DirectoryFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
 
         adapter = DirectoryEntryAdapter(object : ClickListeners {
-            override fun onDocumentClicked(clickedDocument: CachingDocumentFile) {
+            override fun onDocumentClicked(clickedDocument: DocumentFile) {
                 viewModel.documentClicked(clickedDocument)
             }
 
-            override fun onDocumentLongClicked(clickedDocument: CachingDocumentFile) {
+            override fun onDocumentLongClicked(clickedDocument: DocumentFile) {
                 renameDocument(clickedDocument)
             }
         })
@@ -98,7 +99,7 @@ class DirectoryFragment : Fragment() {
         viewModel.loadDirectory(directoryUri)
     }
 
-    private fun openDocument(document: CachingDocumentFile) {
+    private fun openDocument(document: DocumentFile) {
         try {
             val openIntent = Intent(Intent.ACTION_VIEW).apply {
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -108,19 +109,19 @@ class DirectoryFragment : Fragment() {
         } catch (ex: ActivityNotFoundException) {
             Toast.makeText(
                 requireContext(),
-                resources.getString(R.string.error_no_activity, document.name),
+                resources.getString(R.string.error_no_activity, document.displayName),
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
     @SuppressLint("InflateParams")
-    private fun renameDocument(document: CachingDocumentFile) {
+    private fun renameDocument(document: DocumentFile) {
         // Normally we don't want to pass `null` in as the parent, but the dialog doesn't exist,
         // so there isn't a parent layout to use yet.
         val dialogView = layoutInflater.inflate(R.layout.rename_layout, null)
         val editText = dialogView.findViewById<EditText>(R.id.file_name)
-        editText.setText(document.name)
+        editText.setText(document.displayName)
 
         // Use a lambda so that we have access to the [EditText] with the new name.
         val buttonCallback: (DialogInterface, Int) -> Unit = { _, buttonId ->
@@ -128,7 +129,7 @@ class DirectoryFragment : Fragment() {
                 DialogInterface.BUTTON_POSITIVE -> {
                     val newName = editText.text.toString()
                     if (newName.isNotBlank()) {
-                        document.rename(newName)
+//                        document.rename(newName)
 
                         // The easiest way to refresh the UI is to load the directory again.
                         viewModel.loadDirectory(directoryUri)

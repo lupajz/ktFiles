@@ -18,10 +18,10 @@ package com.example.android.ktfiles
 
 import android.app.Application
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.safile.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,26 +30,28 @@ import kotlinx.coroutines.withContext
  * ViewModel for the [DirectoryFragment].
  */
 class DirectoryFragmentViewModel(application: Application) : AndroidViewModel(application) {
-    private val _documents = MutableLiveData<List<CachingDocumentFile>>()
+    private val _documents = MutableLiveData<List<DocumentFile>>()
     val documents = _documents
 
-    private val _openDirectory = MutableLiveData<Event<CachingDocumentFile>>()
+    private val _openDirectory = MutableLiveData<Event<DocumentFile>>()
     val openDirectory = _openDirectory
 
-    private val _openDocument = MutableLiveData<Event<CachingDocumentFile>>()
+    private val _openDocument = MutableLiveData<Event<DocumentFile>>()
     val openDocument = _openDocument
 
     fun loadDirectory(directoryUri: Uri) {
-        val documentsTree = DocumentFile.fromTreeUri(getApplication(), directoryUri) ?: return
-        val childDocuments = documentsTree.listFiles().toCachingList()
 
         // It's much nicer when the documents are sorted by something, so we'll sort the documents
         // we got by name. Unfortunate there may be quite a few documents, and sorting can take
         // some time, so we'll take advantage of coroutines to take this work off the main thread.
         viewModelScope.launch {
+            val documentsTree =
+                DocumentFile.fromUri(getApplication(), directoryUri) ?: return@launch
+            val childDocuments = documentsTree.listFiles()
+
             val sortedDocuments = withContext(Dispatchers.IO) {
                 childDocuments.toMutableList().apply {
-                    sortBy { it.name }
+                    sortBy { it.displayName }
                 }
             }
             _documents.postValue(sortedDocuments)
@@ -60,7 +62,7 @@ class DirectoryFragmentViewModel(application: Application) : AndroidViewModel(ap
      * Method to dispatch between clicking on a document (which should be opened), and
      * a directory (which the user wants to navigate into).
      */
-    fun documentClicked(clickedDocument: CachingDocumentFile) {
+    fun documentClicked(clickedDocument: DocumentFile) {
         if (clickedDocument.isDirectory) {
             openDirectory.postValue(Event(clickedDocument))
         } else {
